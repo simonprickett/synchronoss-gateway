@@ -21,10 +21,11 @@ const onSensorMessage = sensorMessage => {
     const stringifiedPayload = stringifyObject(sensorMessage.payload)
 
     const payload = {
-      event_type: sensorMessage.type,
+      EVENT_TYPE: sensorMessage.type,
       timestamp: `${sensorMessage.timestamp}`,
       sensorId: sensorMessage.sensorId,
       sequenceNumber: `${sensorMessage.sequenceNumber}`,
+      gatewayId: gateway.macAddress,
       ...stringifiedPayload
     }
 
