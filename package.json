@@ -1,6 +1,6 @@
 {
   "name": "synchronoss-gateway",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Conectric Mesh Gateway for Synchronoss",
   "main": "server.js",
   "scripts": {
@@ -19,7 +19,8 @@
     "node": ">=8.9.4"
   },
   "dependencies": {
-    "conectric-usb-gateway": "1.0.11",
+    "@hapi/joi": "^15.1.0",
+    "conectric-usb-gateway-beta": "^0.0.6",
     "moment": "^2.24.0",
     "request": "^2.88.0"
   }
