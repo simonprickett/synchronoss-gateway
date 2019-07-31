@@ -154,6 +154,18 @@ const sendMeterRequest = (meterSerialNumberHex, destination) => {
   }, config.requestTimeout)
 }
 
+const startNextMeterRequest = () => {
+  setTimeout(() => {
+    console.log('Starting a new reading request.')
+    ekmData.currentMessageType = 'A'
+    ekmData.dataChunksA = []
+    ekmData.dataChunksB = []
+    moveToNextMeter()
+    const meter = getCurrentMeter()
+    sendMeterRequest(meter.hexSerialNumber, meter.rs485HubId)
+  }, config.readingInterval)
+}
+
 const onGatewayReady = () => {
   console.log('Gateway is ready to send messages.')
   ekmData.currentMessageType = 'A'
@@ -230,33 +242,38 @@ const onSensorMessage = sensorMessage => {
         clearMeterReadingInterval()
 
         if (ekmData.currentMessageType === 'A') {
-          // Send EKM v4 meter message type B
-          ekmData.currentMessageType = 'B'
-          setTimeout(() => {     
-            const meter = getCurrentMeter()     
-            sendMeterRequest(meter.hexSerialNumber, meter.rs485HubId)
-          }, 1000)
+          // Check CRC on A message
+          if (! ekmdecoder.crcCheck(ekmData.dataChunksA.join(''))) {
+            console.log('Meter message A CRC check failed, skipping this meter for now.');
+            startNextMeterRequest()
+          } else {
+            console.log('Meter message A CRC check passed.')
+            // Send EKM v4 meter message type B
+            ekmData.currentMessageType = 'B'
+            setTimeout(() => {     
+              const meter = getCurrentMeter()     
+              sendMeterRequest(meter.hexSerialNumber, meter.rs485HubId)
+            }, 1000)
+          }
         } else {
-          // We now have the complete meter reading.
-          sendToSynchronoss(sensorMessage.sensorId, sensorMessage.sequenceNumber, sensorMessage.timestamp, 'meter', {
-            EVENT_TYPE: 'meter',
-            timestamp: `${sensorMessage.timestamp}`,
-            sensorId: sensorMessage.sensorId,
-            sequenceNumber: `${sensorMessage.sequenceNumber}`,
-            gatewayId: gateway.macAddress,
-            ...stringifyObject(ekmdecoder.decodeV4Message(ekmData.dataChunksA.join(''), ekmData.dataChunksB.join('')))
-          })
-  
-          // Set off the reading process again.
-          setTimeout(() => {
-            console.log('Starting a new reading request.')
-            ekmData.currentMessageType = 'A'
-            ekmData.dataChunksA = []
-            ekmData.dataChunksB = []
-            moveToNextMeter()
-            const meter = getCurrentMeter()
-            sendMeterRequest(meter.hexSerialNumber, meter.rs485HubId)
-          }, config.readingInterval)
+          if (! ekmdecoder.crcCheck(ekmData.dataChunksB.join(''))) {
+            console.log('Meter message B CRC check failed, skipping this meter for now.');
+            startNextMeterRequest()
+          } else {
+            console.log('Meter message B CRC check passed.')
+            // We now have the complete meter reading.
+            sendToSynchronoss(sensorMessage.sensorId, sensorMessage.sequenceNumber, sensorMessage.timestamp, 'meter', {
+              EVENT_TYPE: 'meter',
+              timestamp: `${sensorMessage.timestamp}`,
+              sensorId: sensorMessage.sensorId,
+              sequenceNumber: `${sensorMessage.sequenceNumber}`,
+              gatewayId: gateway.macAddress,
+              ...stringifyObject(ekmdecoder.decodeV4Message(ekmData.dataChunksA.join(''), ekmData.dataChunksB.join('')))
+            })
+    
+            // Set off the reading process again.
+            startNextMeterRequest()
+          }
         }
       }
     } else {
