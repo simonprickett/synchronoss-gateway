@@ -1,6 +1,8 @@
 {
     "apiUrl": "https://HOSTNAME_GOES_HERE/events",
     "appKey": "API_KEY_GOES_HERE",
+    "appVersion": "APP_VERSION_GOES_HERE",
+    "appModule": "APP_MODULES_GOES_HERE",
     "requestTimeout": 60,
     "readingInterval": 120
 }

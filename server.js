@@ -31,6 +31,8 @@ const verifyConfig = () => {
   const validationResult = Joi.validate(config, Joi.object().keys({
     apiUrl: Joi.string().uri(),
     appKey: Joi.string().min(1).required(),
+    appVersion: Joi.string().min(1).required(),
+    appModule: Joi.string().min(1).required(),
     requestTimeout: Joi.number().integer().min(60).required(),
     readingInterval: Joi.number().integer().min(60).required()
   }).required().options({
@@ -90,7 +92,7 @@ const verifyMeterMappings = () => {
 const sendToSynchronoss = (sensorId, sequenceNumber, timestamp, type, payload) => {
   const messageDate = moment.unix(timestamp).format('YYYY-MM-DD')
   const eventId = `${sensorId}${sequenceNumber}`
-  const uri = `${config.apiUrl}?APP_KEY=${config.appKey}&APP_VERSION=1&APP_MODULE=sip-iotsb&EVENT_ID=${eventId}&EVENT_DATE=${messageDate}&EVENT_TYPE=${type}`
+  const uri = `${config.apiUrl}?APP_KEY=${config.appKey}&APP_VERSION=${config.appVersion}&APP_MODULE=${config.appModule}&EVENT_ID=${eventId}&EVENT_DATE=${messageDate}&EVENT_TYPE=${type}`
 
   console.log(uri)
   console.log(payload)
