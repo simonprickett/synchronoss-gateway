@@ -1,3 +1,5 @@
+const roundTo = require('round-to')
+
 const ekmdecoder = {
   subMeterV3Mapping: [
     { fieldName: 'model',             startPos:   2, endPos: 5,   isHexNumber: true                                   },
@@ -43,26 +45,27 @@ const ekmdecoder = {
   ],
 
   subMeterV4aMapping: [
+    { fieldName: 'kwh_scale',              startPos: 460, endPos: 461, decode: true,                   isNumeric: true },
     { fieldName: 'model',                  startPos:   2, endPos:  5,  isHexNumber: true                               },
     { fieldName: 'firmware',               startPos:   6, endPos:  7,  isHexNumber: true,              isNumeric: true },
     { fieldName: 'meter_address',          startPos:   8, endPos:  31, decode: true                                    },
-    { fieldName: 'kwh_tot',                startPos:  32, endPos:  47, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'reactive_energy_tot',    startPos:  48, endPos:  63, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'rev_kwh_tot',            startPos:  64, endPos:  79, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'kwh_tariff_1',           startPos:  80, endPos:  95, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'kwh_tariff_2',           startPos:  96, endPos: 111, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'kwh_tariff_3',           startPos: 112, endPos: 127, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'rev_kwh_ln_1',           startPos: 128, endPos: 143, decode: true, decimalPlaces: 1, isNumeric: true }, 
-    { fieldName: 'rev_kwh_ln_2',           startPos: 144, endPos: 159, decode: true, decimalPlaces: 1, isNumeric: true }, 
-    { fieldName: 'rev_kwh_ln_3',           startPos: 160, endPos: 175, decode: true, decimalPlaces: 1, isNumeric: true }, 
-    { fieldName: 'resettable_kwh_tot',     startPos: 176, endPos: 191, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'resettable_rev_kwh_tot', startPos: 192, endPos: 207, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'rms_volts_ln_1',         startPos: 208, endPos: 215, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'rms_volts_ln_2',         startPos: 216, endPos: 223, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'rms_volts_ln_3',         startPos: 224, endPos: 231, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'amps_ln_1',              startPos: 232, endPos: 241, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'amps_ln_2',              startPos: 242, endPos: 251, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'amps_ln_3',              startPos: 252, endPos: 261, decode: true, decimalPlaces: 1, isNumeric: true },
+    { fieldName: 'kwh_tot',                startPos:  32, endPos:  47, decode: true, decimalPlaces: -1, isNumeric: true },
+    { fieldName: 'reactive_energy_tot',    startPos:  48, endPos:  63, decode: true, decimalPlaces: -1, isNumeric: true },
+    { fieldName: 'rev_kwh_tot',            startPos:  64, endPos:  79, decode: true, decimalPlaces: -1, isNumeric: true },
+    { fieldName: 'kwh_tariff_1',           startPos:  80, endPos:  95, decode: true, decimalPlaces: -1, isNumeric: true },
+    { fieldName: 'kwh_tariff_2',           startPos:  96, endPos: 111, decode: true, decimalPlaces: -1, isNumeric: true },
+    { fieldName: 'kwh_tariff_3',           startPos: 112, endPos: 127, decode: true, decimalPlaces: -1, isNumeric: true },
+    { fieldName: 'rev_kwh_ln_1',           startPos: 128, endPos: 143, decode: true, decimalPlaces: -1, isNumeric: true }, 
+    { fieldName: 'rev_kwh_ln_2',           startPos: 144, endPos: 159, decode: true, decimalPlaces: -1, isNumeric: true }, 
+    { fieldName: 'rev_kwh_ln_3',           startPos: 160, endPos: 175, decode: true, decimalPlaces: -1, isNumeric: true }, 
+    { fieldName: 'resettable_kwh_tot',     startPos: 176, endPos: 191, decode: true, decimalPlaces: -1, isNumeric: true },
+    { fieldName: 'resettable_rev_kwh_tot', startPos: 192, endPos: 207, decode: true, decimalPlaces: -1, isNumeric: true },
+    { fieldName: 'rms_volts_ln_1',         startPos: 208, endPos: 215, decode: true, decimalPlaces: 1, isNumeric: true, divisor: 10 },
+    { fieldName: 'rms_volts_ln_2',         startPos: 216, endPos: 223, decode: true, decimalPlaces: 1, isNumeric: true, divisor: 10 },
+    { fieldName: 'rms_volts_ln_3',         startPos: 224, endPos: 231, decode: true, decimalPlaces: 1, isNumeric: true, divisor: 10 },
+    { fieldName: 'amps_ln_1',              startPos: 232, endPos: 241, decode: true, decimalPlaces: 1, isNumeric: true, divisor: 10 },
+    { fieldName: 'amps_ln_2',              startPos: 242, endPos: 251, decode: true, decimalPlaces: 1, isNumeric: true, divisor: 10 },
+    { fieldName: 'amps_ln_3',              startPos: 252, endPos: 261, decode: true, decimalPlaces: 1, isNumeric: true, divisor: 10 },
     { fieldName: 'rms_watts_ln_1',         startPos: 262, endPos: 275, decode: true,                   isNumeric: true },
     { fieldName: 'rms_watts_ln_2',         startPos: 276, endPos: 289, decode: true,                   isNumeric: true },
     { fieldName: 'rms_watts_ln_3',         startPos: 290, endPos: 303, decode: true,                   isNumeric: true },
@@ -74,14 +77,13 @@ const ekmdecoder = {
     { fieldName: 'reactive_pwr_ln_2',      startPos: 356, endPos: 369, decode: true,                   isNumeric: true },
     { fieldName: 'reactive_pwr_ln_3',      startPos: 370, endPos: 383, decode: true,                   isNumeric: true },  
     { fieldName: 'reactive_pwr_tot',       startPos: 384, endPos: 397, decode: true,                   isNumeric: true },
-    { fieldName: 'line_freq',              startPos: 398, endPos: 405, decode: true, decimalPlaces: 2, isNumeric: true },
+    { fieldName: 'line_freq',              startPos: 398, endPos: 405, decode: true, decimalPlaces: 2, isNumeric: true, divisor: 100 },
     { fieldName: 'pulse_cnt_1',            startPos: 406, endPos: 421, decode: true,                   isNumeric: true },
     { fieldName: 'pulse_cnt_2',            startPos: 422, endPos: 437, decode: true,                   isNumeric: true },
     { fieldName: 'pulse_cnt_3',            startPos: 438, endPos: 453, decode: true,                   isNumeric: true },
     { fieldName: 'state_inputs',           startPos: 454, endPos: 455, decode: true,                   isNumeric: true },
     { fieldName: 'state_watts_dir',        startPos: 456, endPos: 457, decode: true,                   isNumeric: true },
     { fieldName: 'state_out',              startPos: 458, endPos: 459, decode: true,                   isNumeric: true },
-    { fieldName: 'kwh_scale',              startPos: 460, endPos: 461, decode: true,                   isNumeric: true },
   //  { fieldName: 'reserved_a',             startPos: 462, endPos: 465, decode: false                                   },
     { fieldName: 'meter_time',             startPos: 466, endPos: 493, decode: true,                                   }
   //  { fieldName: 'reserved_b',             startPos: 494, endPos: 505, decode: false                                   },
@@ -96,16 +98,16 @@ const ekmdecoder = {
   //  { fieldName: 'kwh_tariff_2',          startPos:  48, endPos:  63, decode: true, decimalPlaces: 1, isNumeric: true },
   //  { fieldName: 'kwh_tariff_3',          startPos:  64, endPos:  79, decode: true, decimalPlaces: 1, isNumeric: true },
   //  { fieldName: 'kwh_tariff_4',          startPos:  80, endPos:  95, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'rev_kwh_tariff_1',      startPos:  96, endPos: 111, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'rev_kwh_tariff_2',      startPos: 112, endPos: 127, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'rev_kwh_tariff_3',      startPos: 128, endPos: 143, decode: true, decimalPlaces: 1, isNumeric: true },
-    { fieldName: 'rev_kwh_tariff_4',      startPos: 144, endPos: 159, decode: true, decimalPlaces: 1, isNumeric: true },
-  //  { fieldName: 'rms_volts_ln_1',        startPos: 160, endPos: 167, decode: true, decimalPlaces: 1, isNumeric: true },
-  //  { fieldName: 'rms_volts_ln_2',        startPos: 168, endPos: 175, decode: true, decimalPlaces: 1, isNumeric: true },
-  //  { fieldName: 'rms_volts_ln_3',        startPos: 176, endPos: 183, decode: true, decimalPlaces: 1, isNumeric: true },
-  //  { fieldName: 'amps_ln_1',             startPos: 184, endPos: 193, decode: true, decimalPlaces: 1, isNumeric: true },
-  //  { fieldName: 'amps_ln_2',             startPos: 194, endPos: 203, decode: true, decimalPlaces: 1, isNumeric: true },
-  //  { fieldName: 'amps_ln_3',             startPos: 204, endPos: 213, decode: true, decimalPlaces: 1, isNumeric: true },
+    { fieldName: 'rev_kwh_tariff_1',      startPos:  96, endPos: 111, decode: true, decimalPlaces: -1, isNumeric: true },
+    { fieldName: 'rev_kwh_tariff_2',      startPos: 112, endPos: 127, decode: true, decimalPlaces: -1, isNumeric: true },
+    { fieldName: 'rev_kwh_tariff_3',      startPos: 128, endPos: 143, decode: true, decimalPlaces: -1, isNumeric: true },
+    { fieldName: 'rev_kwh_tariff_4',      startPos: 144, endPos: 159, decode: true, decimalPlaces: -1, isNumeric: true },
+  //  { fieldName: 'rms_volts_ln_1',        startPos: 160, endPos: 167, decode: true, decimalPlaces: 1, isNumeric: true, divisor: 10 },
+  //  { fieldName: 'rms_volts_ln_2',        startPos: 168, endPos: 175, decode: true, decimalPlaces: 1, isNumeric: true, divisor: 10 },
+  //  { fieldName: 'rms_volts_ln_3',        startPos: 176, endPos: 183, decode: true, decimalPlaces: 1, isNumeric: true, divisor: 10 },
+  //  { fieldName: 'amps_ln_1',             startPos: 184, endPos: 193, decode: true, decimalPlaces: 1, isNumeric: true, divisor: 10 },
+  //  { fieldName: 'amps_ln_2',             startPos: 194, endPos: 203, decode: true, decimalPlaces: 1, isNumeric: true, divisor: 10 },
+  //  { fieldName: 'amps_ln_3',             startPos: 204, endPos: 213, decode: true, decimalPlaces: 1, isNumeric: true, divisor: 10 },
   //  { fieldName: 'rms_watts_ln_1',        startPos: 214, endPos: 227, decode: true,                   isNumeric: true },
   //  { fieldName: 'rms_watts_ln_2',        startPos: 228, endPos: 241, decode: true,                   isNumeric: true },
   //  { fieldName: 'rms_watts_ln_3',        startPos: 242, endPos: 255, decode: true,                   isNumeric: true },
@@ -113,7 +115,7 @@ const ekmdecoder = {
     { fieldName: 'cos_theta_ln_1',        startPos: 270, endPos: 277, decode: true, decimalPlaces: 2                  },
     { fieldName: 'cos_theta_ln_2',        startPos: 278, endPos: 285, decode: true, decimalPlaces: 2                  },
     { fieldName: 'cos_theta_ln_3',        startPos: 286, endPos: 293, decode: true, decimalPlaces: 2                  },
-    { fieldName: 'rms_watts_max_demand',  startPos: 294, endPos: 309, decode: true, decimalPlaces: 1, isNumeric: true },
+    { fieldName: 'rms_watts_max_demand',  startPos: 294, endPos: 309, decode: true, decimalPlaces: 1, isNumeric: true, divisor: 10},
     { fieldName: 'max_demand_period',     startPos: 310, endPos: 311, decode: true,                   isNumeric: true },
     { fieldName: 'pulse_ratio_1',         startPos: 312, endPos: 319, decode: true,                   isNumeric: true },
     { fieldName: 'pulse_ratio_2',         startPos: 320, endPos: 327, decode: true,                   isNumeric: true },
@@ -133,12 +135,12 @@ const ekmdecoder = {
 
   decodeV4Message: (msgAPayload, msgBPayload) => {
     let obj = ekmdecoder.hex2Obj(msgAPayload, ekmdecoder.subMeterV4aMapping)
-    Object.assign(obj, ekmdecoder.hex2Obj(msgBPayload, ekmdecoder.subMeterV4bMapping))
+    Object.assign(obj, ekmdecoder.hex2Obj(msgBPayload, ekmdecoder.subMeterV4bMapping, obj.kwh_scale))
 
     return obj
   },
 
-  hex2Obj: (h, mapping) => {
+  hex2Obj: (h, mapping, kwhScale) => {
     const hex = h.toString()
   
     let res = {}
@@ -161,10 +163,18 @@ const ekmdecoder = {
         // Look at the whole field as a single hex number
         str = `${parseInt(str, 16)}`
       }
+
+      let decimalPlaces = 0
+
+      if (currField.decimalPlaces === -1) {
+        decimalPlaces = (kwhScale ? kwhScale : res.kwh_scale)
+      } else if (currField.decimalPlaces && currField.decimalPlaces > 0) {
+        decimalPlaces = currField.decimalPlaces
+      }
   
-      if (currField.decimalPlaces && currField.decimalPlaces > 0) {
+      if (decimalPlaces > 0) {
         // Insert decimal point at appropriate place
-        let dotPos = str.length - currField.decimalPlaces
+        let dotPos = str.length - decimalPlaces
         str = `${str.substring(0, dotPos)}.${str.substring(dotPos)}`
       } 
   
@@ -172,11 +182,16 @@ const ekmdecoder = {
       if (currField.isNumeric) {
         let val
   
-        if (currField.decimalPlaces && currField.decimalPlaces > 0) {
+        console.log(`${currField.fieldName} decimalPlaces ${decimalPlaces}`)
+        if (decimalPlaces > 0) {
           // Parse string to float?
           val = parseFloat(str)
         } else {
           val = parseInt(str)
+        }
+
+        if (currField.hasOwnProperty('divisor')) {
+          val = roundTo((val / currField.divisor), decimalPlaces)
         }
   
         res[currField.fieldName] = val
