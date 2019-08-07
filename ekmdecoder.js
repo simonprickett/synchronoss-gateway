@@ -253,6 +253,7 @@ const ekmdecoder = {
   },
 
   crcCheck: (msg) => {
+    console.log(msg)
     if (! msg || msg.length % 2 !== 0) {
       return false
     }
@@ -264,9 +265,17 @@ const ekmdecoder = {
       buf = `${buf}${String.fromCharCode(parseInt(msg.substring(n, n + 2), 16))}`
     }
 
-    const checkSumBytes = msg.substring(msg.length - 4)
+    let checkSumBytes = msg.substring(msg.length - 4)
     const calculatedCrc = ekmdecoder.ekm_calc_crc16(buf).toString(16)
+
+    while (checkSumBytes.startsWith('0')) {
+      checkSumBytes = checkSumBytes.substring(1)
+    }
+
     const result = checkSumBytes === calculatedCrc
+
+    console.log("CHECKSUMBYTE = " + checkSumBytes);
+    console.log("CALCULATEDCRC= " + calculatedCrc);
 
     return result
   }

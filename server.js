@@ -142,7 +142,7 @@ const sendMeterRequest = (meterSerialNumberHex, destination) => {
 
   clearMeterReadingInterval()
 
-  meterReadingInterval = setTimeout(function () {
+  meterReadingInterval = setTimeout(() => {
     meterReadingInterval = undefined
 
     console.log('Starting a new reading request.')
@@ -208,14 +208,16 @@ const onSensorMessage = sensorMessage => {
           destination: sensorMessage.sensorId
         })
 
-        console.log(`Sent request for chunk ${ekmData.chunkToRequest}`)
+        console.log(`Sent request for message ${ekmData.currentMessageType} chunk ${ekmData.chunkToRequest}`)
       }, 1000)
     } else if (sensorMessage.type === 'rs485ChunkResponse') {
       if (ekmData.chunkToRequest < (ekmData.numChunks - 1)) {
         if (ekmData.currentMessageType === 'A') {
           ekmData.dataChunksA.push(sensorMessage.payload.data)
+	  console.log(`dataChunksA: ${ekmData.dataChunksA.length}`)
         } else {
           ekmData.dataChunksB.push(sensorMessage.payload.data)
+	  console.log(`dataChunksB: ${ekmData.dataChunksB.length}`)
         }
 
         console.log(`Received chunk ${ekmData.chunkToRequest}`)
@@ -228,7 +230,7 @@ const onSensorMessage = sensorMessage => {
             destination: sensorMessage.sensorId
           })
 
-          console.log(`Sent request for chunk ${ekmData.chunkToRequest}`)
+          console.log(`Sent request for message ${ekmData.currentMessageType} chunk ${ekmData.chunkToRequest}`)
         }, 1000)
       } else {
         console.log(`Received chunk ${ekmData.chunkToRequest}`)
@@ -236,8 +238,10 @@ const onSensorMessage = sensorMessage => {
         // Drop the last byte from the final chunk.
         if (ekmData.currentMessageType === 'A') {
           ekmData.dataChunksA.push(sensorMessage.payload.data.substring(0, sensorMessage.payload.data.length - 2))
+	  console.log(`dataChunksA: ${ekmData.dataChunksA.length}`)
         } else {
           ekmData.dataChunksB.push(sensorMessage.payload.data.substring(0, sensorMessage.payload.data.length - 2))
+	  console.log(`dataChunksB: ${ekmData.dataChunksB.length}`)
         }
         
         // Stop the timeout.
