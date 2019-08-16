@@ -132,13 +132,21 @@ const clearMeterReadingInterval = () => {
   meterReadingInterval = undefined
 }
 
+const randomTrackingId = () => {
+  return ('0000'+ Math.floor(Math.random() * 65535).toString(16)).substr(-4)
+}
+
 const sendMeterRequest = (meterSerialNumberHex, destination) => {
+  let genTrackingId = randomTrackingId()
+
   gateway.sendRS485Request({
     message: `2F3F${meterSerialNumberHex}303${ekmData.currentMessageType === 'A' ? 0 : 1}210D0A`,
     destination,
-    hexEncodePayload: false
+    hexEncodePayload: false,
+    trackingId: `${genTrackingId}`
   })
-  console.log(`Sent request for ${ekmData.currentMessageType} message to ${meterSerialNumberHex}.`)
+
+  console.log(`Sent request for ${ekmData.currentMessageType} message to ${meterSerialNumberHex} with tracking ID:${genTrackingId}.`)
 
   clearMeterReadingInterval()
 
@@ -179,6 +187,8 @@ const onGatewayReady = () => {
 }
 
 const onSensorMessage = sensorMessage => {
+  let genTrackingId = randomTrackingId()
+
   if (! metersEnabled) {
     // If this gateway is not configured for meter reading, ignore 
     // those message types.
@@ -188,6 +198,9 @@ const onSensorMessage = sensorMessage => {
       return
     }
   }
+
+  // Simon
+  //if (sensorMessage.type !== 'rs485ChunkEnvelopeResponse' && sensorMessage.type !== 'rs485ChunkResponse') { return }
 
   console.log(sensorMessage)
 
@@ -205,11 +218,12 @@ const onSensorMessage = sensorMessage => {
         gateway.sendRS485ChunkRequest({
           chunkNumber: ekmData.chunkToRequest,
           chunkSize: ekmData.chunkSize,
-          destination: sensorMessage.sensorId
+          destination: sensorMessage.sensorId,
+          trackingId: `${genTrackingId}`
         })
 
-        console.log(`Sent request for message ${ekmData.currentMessageType} chunk ${ekmData.chunkToRequest}`)
-      }, 1000)
+        console.log(`Sent request for message ${ekmData.currentMessageType} chunk ${ekmData.chunkToRequest} with tracking ID:${genTrackingId}.`)
+      }, 500)
     } else if (sensorMessage.type === 'rs485ChunkResponse') {
       if (ekmData.chunkToRequest < (ekmData.numChunks - 1)) {
         if (ekmData.currentMessageType === 'A') {
@@ -227,11 +241,12 @@ const onSensorMessage = sensorMessage => {
           gateway.sendRS485ChunkRequest({
             chunkNumber: ekmData.chunkToRequest,
             chunkSize: ekmData.chunkSize,
-            destination: sensorMessage.sensorId
+            destination: sensorMessage.sensorId,
+            trackingId: `${genTrackingId}`
           })
 
-          console.log(`Sent request for message ${ekmData.currentMessageType} chunk ${ekmData.chunkToRequest}`)
-        }, 1000)
+          console.log(`Sent request for message ${ekmData.currentMessageType} chunk ${ekmData.chunkToRequest} with tracking ID:${genTrackingId}.`)
+        }, 250)
       } else {
         console.log(`Received chunk ${ekmData.chunkToRequest}`)
 
@@ -259,7 +274,7 @@ const onSensorMessage = sensorMessage => {
             setTimeout(() => {     
               const meter = getCurrentMeter()     
               sendMeterRequest(meter.hexSerialNumber, meter.rs485HubId)
-            }, 1000)
+            }, 250)
           }
         } else {
           if (! ekmdecoder.crcCheck(ekmData.dataChunksB.join(''))) {
@@ -323,5 +338,7 @@ verifyMeterMappings()
 
 gateway.runGateway({
   onSensorMessage,
-  onGatewayReady
+  onGatewayReady,
+  sendRawData: true,
+  useTrackingId: true
 })
