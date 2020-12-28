@@ -1,6 +1,6 @@
 {
   "name": "synchronoss-gateway",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Conectric Mesh Gateway for Synchronoss",
   "main": "server.js",
   "scripts": {
