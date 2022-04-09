@@ -21,7 +21,7 @@
   "dependencies": {
     "@hapi/joi": "^15.1.0",
     "conectric-usb-gateway-beta": "^0.0.8",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "request": "^2.88.0",
     "round-to": "^4.0.0"
   }
